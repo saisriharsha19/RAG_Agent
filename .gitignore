@@ -1,0 +1,6 @@
+.env
+chat_history.json
+data/
+vector_db/
+src/__pycache__/
+logs/
