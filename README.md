@@ -9,6 +9,10 @@
 
 A sophisticated Retrieval-Augmented Generation (RAG) chatbot that combines document analysis, web search, and advanced AI safety measures to provide accurate, contextual responses while maintaining the highest standards of content safety and user experience.
 
+<img width="2861" height="1503" alt="image" src="https://github.com/user-attachments/assets/3b7a593e-408c-4001-874e-2d5f836275cc" />
+
+
+
 ## ✨ Key Features
 
 ### 🔍 **Intelligent Document Processing**
