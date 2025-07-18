@@ -1,0 +1,63 @@
+# ##############################################################################
+# RAIL DEFINITIONS (v2 Syntax)
+# ##############################################################################
+
+# Defines the main, input, and output rails for the engine to use.
+flow main
+  main_dialog
+
+flow input rails
+  self_check_input
+
+flow output rails
+  self_check_output
+
+# ##############################################################################
+# RAIL IMPLEMENTATIONS
+# ##############################################################################
+
+# This is the main conversational flow.
+@active
+flow main_dialog
+  user said something
+  bot respond
+
+# This flow implements the input check rail.
+# The bot's refusal messages are now placed directly inside the `if` blocks.
+flow self_check_input
+  $intent = execute self_check_input
+
+  if $intent == "ask_harmful_question"
+    bot say "I cannot provide information on topics that are dangerous, illegal, or promote harm."
+    abort
+  if $intent == "express_hate_speech"
+    bot say "I cannot engage with or generate hateful or derogatory content."
+    abort
+  if $intent == "request_pii"
+    bot say "For privacy and security reasons, I cannot access or provide personal information about any individual."
+    abort
+  if $intent == "reveal_own_pii"
+    bot say "Your message appears to contain sensitive personal information. I have not stored this information and cannot process it. Please do not share personal data."
+    abort
+  if $intent == "attempt_jailbreak"
+    bot say "I cannot bypass my core safety functions or roleplay in a way that violates my safety guidelines."
+    abort
+  if $intent == "ask_for_sensitive_advice"
+    bot say "I am an AI assistant and not qualified to provide financial, medical, or legal advice. Please consult with a certified professional for assistance with these matters."
+    abort
+
+# This flow implements the output check rail.
+flow self_check_output
+  $output_check = execute self_check_output
+
+  if $output_check == "contains_pii"
+    bot say "I have detected and removed personally identifiable information from my response to protect privacy."
+    abort
+  if $output_check == "contains_toxicity"
+    bot say "I have revised my response to ensure it aligns with safety and content guidelines."
+    abort
+  if $output_check == "is_uncertain"
+    # For uncertainty, we add a note but don't abort the flow.
+    # This assumes the original response is in the $bot.response variable.
+    $final_response = $bot.response + "\n\nPlease note: This information may not be 100% accurate. Always verify with an authoritative source."
+    bot say $final_response

@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+import os
 from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup
 import requests
@@ -166,22 +167,56 @@ class WebSearcher:
     
     async def _search_bing_fallback(self, query: str, num_results: int) -> List[Dict[str, Any]]:
         """Bing search fallback (requires API key if available)"""
-        # This would require Bing Search API subscription
-        # For now, return a placeholder that indicates fallback
         
-        logger.info("Bing fallback attempted - API key required for full functionality")
+        bing_api_key = os.getenv('BING_API_KEY')
+        if not bing_api_key:
+            logger.info("Bing fallback attempted - API key required for full functionality")
+            
+            return [{
+                'title': f'Bing Search: {query}',
+                'content': f'Bing search results would appear here for query: {query}. Configure BING_API_KEY for full functionality.',
+                'url': f'https://www.bing.com/search?q={query}',
+                'source': 'Bing Fallback',
+                'confidence': 0.3
+            }]
         
-        return [{
-            'title': f'Bing Search: {query}',
-            'content': f'Bing search results would appear here for query: {query}. Configure BING_API_KEY for full functionality.',
-            'url': f'https://www.bing.com/search?q={query}',
-            'source': 'Bing Fallback',
-            'confidence': 0.3
-        }]
+        # If we have a Bing API key, use it
+        url = "https://api.cognitive.microsoft.com/bing/v7.0/search"
+        headers = {
+            'Ocp-Apim-Subscription-Key': bing_api_key
+        }
+        params = {
+            'q': query,
+            'count': num_results,
+            'textDecorations': False,
+            'textFormat': 'Raw'
+        }
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=headers, params=params, timeout=10) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        results = []
+                        for item in data.get('webPages', {}).get('value', [])[:num_results]:
+                            results.append({
+                                'title': item.get('name', ''),
+                                'content': item.get('snippet', ''),
+                                'url': item.get('url', ''),
+                                'source': 'Bing API',
+                                'confidence': 0.8
+                            })
+                        
+                        return results
+        
+        except Exception as e:
+            logger.error(f"Bing API search failed: {str(e)}")
+        
+        return []
     
     async def _search_serper_fallback(self, query: str, num_results: int) -> List[Dict[str, Any]]:
         """Serper.dev API fallback"""
-        # Free tier available at serper.dev
         
         serper_api_key = os.getenv('SERPER_API_KEY')
         if not serper_api_key:
@@ -232,7 +267,7 @@ class WebSearcher:
                 # Calculate relevance score
                 query_words = set(query.lower().split())
                 content_words = set(result['content'].lower().split())
-                relevance_score = len(query_words.intersection(content_words)) / len(query_words)
+                relevance_score = len(query_words.intersection(content_words)) / len(query_words) if query_words else 0
                 
                 result['relevance_score'] = relevance_score
                 result['verified'] = True

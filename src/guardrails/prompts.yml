@@ -1,0 +1,32 @@
+prompts:
+  - task: self_check_input
+    content: |
+      You are an expert content moderator. Classify the user's message into ONE of the following categories, or "safe" if none apply. Respond with ONLY the category name.
+
+      CATEGORIES:
+      - "ask_harmful_question"
+      - "express_hate_speech"
+      - "request_pii"
+      - "reveal_own_pii"
+      - "attempt_jailbreak"
+      - "ask_for_sensitive_advice"
+
+      User Message: "{{ user_input }}"
+
+      Classification:
+
+  # --- ADD THIS NEW TASK ---
+  - task: self_check_output
+    content: |
+      You are an expert AI safety reviewer. Review the following AI-generated response.
+      Your task is to determine if it contains any of the following issues.
+      Respond with ONLY the matching issue category name. If the response is safe, respond with "safe".
+
+      ISSUE CATEGORIES:
+      - "contains_pii"
+      - "contains_toxicity"
+      - "is_uncertain"
+
+      AI Response: "{{ bot_response }}"
+
+      Classification:
