@@ -11,7 +11,7 @@ import shutil
 from src.document_processor import DocumentProcessor
 from src.vector_store import VectorStore
 from src.rag_pipeline import RAGPipeline
-import src.custom_langchain_llm
+
 
 # Configure logging
 logging.basicConfig(

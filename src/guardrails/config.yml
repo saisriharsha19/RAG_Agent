@@ -4,4 +4,4 @@ colang_version: "2.x"
 # This section tells the guardrails engine which flows to execute.
 models:
   - type: main
-    engine: custom_llm 
+    engine: langchain 

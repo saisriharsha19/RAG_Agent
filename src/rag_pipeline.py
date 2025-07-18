@@ -322,7 +322,7 @@ class RAGPipeline:
         return result
     
     async def _comprehensive_safety_check(self, query: str, safety_level: str) -> Dict[str, Any]:
-        """Perform comprehensive safety check including NeMo Guardrails"""
+        """Use working guardrails system"""
         
         safety_result = {
             'is_safe': True,
@@ -332,45 +332,25 @@ class RAGPipeline:
         }
         
         if not self.enable_guardrails or not self.guardrails_manager:
-            logger.info("⚠️  Guardrails disabled or not available - skipping safety check")
             return safety_result
         
         try:
-            # First, check with custom patterns
-            is_safe, violations = self.guardrails_manager.is_safe_enhanced(query)
+            # Use the working system
+            result = await self.guardrails_manager.working_system.check_and_respond(query)
             
-            if not is_safe:
-                safety_result['is_safe'] = False
-                safety_result['violations'] = violations
-                safety_result['response'] = self.guardrails_manager.get_refusal_message(violations)
-                logger.warning(f"🚫 Custom guardrails detected {len(violations)} violations")
+            if result['blocked']:
+                safety_result.update({
+                    'is_safe': False,
+                    'violations': result['violations'],
+                    'response': result['response']
+                })
             
-            # Then check with NeMo Guardrails if available
-            if hasattr(self.guardrails_manager, 'check_with_nemo'):
-                try:
-                    nemo_safe, nemo_warnings = await self.guardrails_manager.check_with_nemo(query)
-                    
-                    if not nemo_safe:
-                        safety_result['is_safe'] = False
-                        if not safety_result['response']:  # Only set if not already set
-                            safety_result['response'] = "This request has been blocked by our safety system."
-                        safety_result['warnings'].extend(nemo_warnings)
-                        logger.warning("🚫 NeMo Guardrails blocked the request")
-                    
-                    if nemo_warnings:
-                        safety_result['warnings'].extend(nemo_warnings)
-                        
-                except Exception as e:
-                    logger.warning(f"⚠️  NeMo Guardrails check failed: {e}")
-                    safety_result['warnings'].append("NeMo Guardrails check encountered an error")
-            
-            logger.info(f"🛡️  Safety check completed: {'SAFE' if safety_result['is_safe'] else 'BLOCKED'}")
+            return safety_result
             
         except Exception as e:
-            logger.error(f"❌ Safety check failed: {e}")
-            safety_result['warnings'].append("Safety check system encountered an error")
-        
-        return safety_result
+            logger.error(f"Safety check failed: {e}")
+            safety_result['warnings'].append(f"Safety check error: {str(e)}")
+            return safety_result
     
     async def _check_output_safety(self, response: str, safety_level: str) -> Dict[str, Any]:
         """Check AI-generated output for safety violations"""
