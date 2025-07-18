@@ -12,6 +12,16 @@ A sophisticated Retrieval-Augmented Generation (RAG) chatbot that combines docum
 <img width="2861" height="1503" alt="image" src="https://github.com/user-attachments/assets/3b7a593e-408c-4001-874e-2d5f836275cc" />
 
 
+<img width="2871" height="1494" alt="image" src="https://github.com/user-attachments/assets/df18a6fb-4c25-442a-b706-2b939825165d" />
+
+
+<img width="2878" height="1487" alt="image" src="https://github.com/user-attachments/assets/882e9941-e2d1-4d2c-a76a-74f585da952d" />
+
+
+<img width="2878" height="1522" alt="image" src="https://github.com/user-attachments/assets/e08a470c-b381-4c7c-9eb6-93f19bb5dc59" />
+
+
+
 
 ## ✨ Key Features
 
